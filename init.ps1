@@ -1,4 +1,12 @@
-﻿# check if cygwin is already installed
+﻿# make sure we are an admin
+If (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator"))
+{   
+$arguments = "& '" + $myinvocation.mycommand.definition + "'"
+Start-Process powershell -Verb runAs -ArgumentList $arguments
+Break
+}
+
+# check if cygwin is already installed
 # HACK ALERT
 $installCygwin = $true
 If ((Test-Path "C:\cygwin64\") -or (Test-Path "C:\cygwin\")) {
@@ -70,11 +78,21 @@ else
     Exit
 }
 
+# install menlo for powerline
+$url = "https://github.com/abertsch/Menlo-for-Powerline/blob/master/Menlo%20for%20Powerline.ttf?raw=true"
+$output = "$PSScriptRoot\Menlo for Powerline.ttf"
+Write-Output "Downloading font.  Please wait, this might take several seconds."
+(New-Object System.Net.WebClient).DownloadFile($url, $output)
+
+$FONTS = 0x14
+$objShell = New-Object -ComObject Shell.Application
+$objFolder = $objShell.Namespace($FONTS)
+$objFolder.CopyHere($output)
+
 # open up our bootstrap.sh file
 $env:Path = $cygwinBin;
-[Diagnostics.Process]::Start("bash.exe","$PSScriptRoot\bootstrap.sh $($cygwinBin)")
+[Diagnostics.Process]::Start("bash.exe","$PSScriptRoot\bootstrap.sh $($cygwinBin) $PSScriptRoot")
 #cmd /c  "$PSScriptRoot\bootstrap.sh" /run
-
 
 function Is-Installed( $program ) {
     
@@ -85,8 +103,4 @@ function Is-Installed( $program ) {
         Where-Object { $_.GetValue( "DisplayName" ) -like "*$program*" } ).Length -gt 0;
 
     return $x86 -or $x64;
-}
-
-function Download-File($url, $output){
-    
 }

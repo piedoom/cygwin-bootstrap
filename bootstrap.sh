@@ -1,5 +1,7 @@
 PATH=$1
 
+echo=$2
+
 # remove old dotfiles
 echo "Removing old dotfiles..."
 rm -rf ~/.zshrc
@@ -30,22 +32,18 @@ cd mintty-colors-solarized
 cat sol.dark >> ~/.zshrc
 cat sol.dark >> ~/.bashrc
 
-# get menlo font
-cd ..
-git clone "https://github.com/abertsch/Menlo-for-Powerline"
-cd Menlo-for-Powerline
-
-# copy font to windows font directory
-cp "Menlo for Powerline.ttf" "C:\\Windows\\Fonts"
-
-echo "Installed menlo to windows.  You'll need to edit your Cygwin options to set it as default"
-
 # remove temporarily downloaded files
-cd ..
-rm -rf "Menlo for Powerline"
 rm -rf "mintty-colors-solarized"
 rm apt-cyg
 
+# change our mintty settings
+touch ~/.minttyrc
+
+echo "BoldAsFont=-1
+Term=xterm-256color
+Font=Menlo for Powerline
+FontHeight=11
+" >> ~/.minttyrc
 
 echo "Process completed.  Please restart your shell."
 $SHELL
